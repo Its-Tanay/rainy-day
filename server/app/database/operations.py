@@ -146,11 +146,15 @@ def create_meal_plans(food_options, start_date, no_of_days):
                         d = option
                         foodSelectsId[option.get('id')] = True
 
-        allForThisTripUnsorted.append([
-            {**b, "startTime": time(hour=9).strftime("%H:%M"), "endTime": time(hour=10).strftime("%H:%M"), "expense": b.get("average_price"), "type": "food"},
-            {**l, "startTime": time(hour=13).strftime("%H:%M"), "endTime": time(hour=14).strftime("%H:%M"), "expense": l.get("average_price"), "type": "food"},
-            {**d, "startTime": time(hour=21).strftime("%H:%M"), "endTime": time(hour=22).strftime("%H:%M"), "expense": d.get("average_price"), "type": "food"},
-        ])
+        day_meals = []
+        if b:
+            day_meals.append({**b, "startTime": time(hour=9).strftime("%H:%M"), "endTime": time(hour=10).strftime("%H:%M"), "expense": b.get("average_price"), "type": "food"})
+        if l:
+            day_meals.append({**l, "startTime": time(hour=13).strftime("%H:%M"), "endTime": time(hour=14).strftime("%H:%M"), "expense": l.get("average_price"), "type": "food"})
+        if d:
+            day_meals.append({**d, "startTime": time(hour=21).strftime("%H:%M"), "endTime": time(hour=22).strftime("%H:%M"), "expense": d.get("average_price"), "type": "food"})
+        
+        allForThisTripUnsorted.append(day_meals)
 
     return allForThisTripUnsorted
 

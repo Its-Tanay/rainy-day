@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: trip-planner-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: trip_planner
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+      target: development
+    container_name: trip-planner-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=True
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/trip_planner
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-dev-secret-key}
+    volumes:
+      - ./server:/app
+      - /app/.venv
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      target: development
+    container_name: trip-planner-frontend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - REACT_APP_BASE_URL_DEV=http://localhost:3000/
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    stdin_open: true
+    tty: true
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  default:
+    name: trip-planner-network

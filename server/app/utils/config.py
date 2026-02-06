@@ -1,15 +1,22 @@
 import os
-import configparser
+from dotenv import load_dotenv
 
 def load_config():
-    config = configparser.ConfigParser()
-    
     base_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-    config_path = os.path.join(base_path, 'config.ini')
+    env_path = os.path.join(base_path, '.env')
 
-    config.read(config_path)
+    if os.path.exists(env_path):
+        load_dotenv(env_path)
 
-    return {
-        'DEBUG': True,
-        'DB_URL': config['LOCAL'].get("DB_URL", 'default_db_url_here')
-    }
+    if os.getenv('DATABASE_URL'):
+        return {
+            'DEBUG': True,
+            'DB_URL': os.getenv('DATABASE_URL'),
+            'JWT_SECRET_KEY': os.getenv('JWT_SECRET_KEY', 'dev-secret-key')
+        }
+    else:
+        return {
+            'DEBUG': True,
+            'DB_URL': 'postgresql://postgres:postgres@localhost:5432/trip_planner',
+            'JWT_SECRET_KEY': 'dev-secret-key'
+        }
