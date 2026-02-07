@@ -1,4 +1,4 @@
-# TRVL Trip Planner
+# Trip Planner
 
 A full-stack trip planning application that generates personalized itineraries based on your preferences, budget, and accessibility needs.
 
